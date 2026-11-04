@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment & secrets (keep .env.example tracked)
+.env
+.env.*
+!.env.example
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Local databases & data volumes
+*.sqlite3
+*.db
+pgdata/
+redisdata/
+
+# Load test output
+loadtest/results/
+
+# Flutter / Dart (for flutter_client/)
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+flutter_client/build/
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store

@@ -44,6 +44,10 @@ loadtest/results/
 .packages
 flutter_client/build/
 
+# Local-only files (plans, notes, overrides)
+*.local
+*.local.*
+
 # IDE / OS
 .idea/
 .vscode/

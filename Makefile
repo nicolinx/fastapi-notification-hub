@@ -1,0 +1,39 @@
+.DEFAULT_GOAL := help
+.PHONY: help install env dev test cov lint format format-check typecheck check clean
+
+help: ## Show this help
+	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+install: ## Install dependencies into .venv (like `pub get`)
+	uv sync
+
+env: ## Create .env from .env.example if it does not exist
+	@test -f .env && echo ".env already exists" || (cp .env.example .env && echo "Created .env")
+
+dev: ## Run the API with auto-reload on http://localhost:8000
+	uv run uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+
+test: ## Run the test suite
+	uv run pytest
+
+cov: ## Run tests with a coverage report
+	uv run pytest --cov=src --cov-report=term-missing tests/
+
+lint: ## Check code for lint problems
+	uv run ruff check .
+
+format: ## Auto-format code and fix simple lint issues
+	uv run ruff format .
+	uv run ruff check --fix .
+
+format-check: ## Check formatting without changing files
+	uv run ruff format --check .
+
+typecheck: ## Run the strict mypy type checker
+	uv run mypy src tests
+
+check: lint format-check typecheck test ## Run everything CI will run
+
+clean: ## Remove caches and build artifacts (keeps .venv and .env)
+	find . -name __pycache__ -not -path "./.venv/*" -prune -exec rm -rf {} +
+	rm -rf .pytest_cache .ruff_cache .mypy_cache .coverage htmlcov

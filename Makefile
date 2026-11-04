@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help install env dev test cov lint format format-check typecheck check clean
+.PHONY: help install env dev test cov lint format format-check typecheck check clean up down logs ps
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -33,6 +33,18 @@ typecheck: ## Run the strict mypy type checker
 	uv run mypy src tests
 
 check: lint format-check typecheck test ## Run everything CI will run
+
+up: ## Start Postgres and Redis in the background, wait until healthy
+	docker compose up -d --wait
+
+down: ## Stop the containers (data is kept in volumes)
+	docker compose down
+
+logs: ## Follow container logs
+	docker compose logs -f
+
+ps: ## Show container status and health
+	docker compose ps
 
 clean: ## Remove caches and build artifacts (keeps .venv and .env)
 	find . -name __pycache__ -not -path "./.venv/*" -prune -exec rm -rf {} +

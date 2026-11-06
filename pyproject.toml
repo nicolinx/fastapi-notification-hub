@@ -28,6 +28,7 @@ dev = [
 line-length = 88
 target-version = "py312"
 src = ["."]
+extend-exclude = ["alembic/versions"]  # auto-generated migration files
 
 [tool.ruff.lint]
 select = [

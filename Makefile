@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help install env dev test cov lint format format-check typecheck check clean up down logs ps
+.PHONY: help install env dev test cov lint format format-check typecheck check clean up down logs ps migrate migration migrate-down psql
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -45,6 +45,19 @@ logs: ## Follow container logs
 
 ps: ## Show container status and health
 	docker compose ps
+
+migrate: ## Apply all pending database migrations
+	uv run alembic upgrade head
+
+migration: ## Generate a migration from model changes: make migration m="add x"
+	@test -n "$(m)" || (echo 'Usage: make migration m="describe the change"' && exit 1)
+	uv run alembic revision --autogenerate -m "$(m)"
+
+migrate-down: ## Roll back the last migration
+	uv run alembic downgrade -1
+
+psql: ## Open a psql shell in the Postgres container
+	docker compose exec postgres psql -U postgres -d notification_hub
 
 clean: ## Remove caches and build artifacts (keeps .venv and .env)
 	find . -name __pycache__ -not -path "./.venv/*" -prune -exec rm -rf {} +

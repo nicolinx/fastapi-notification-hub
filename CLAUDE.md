@@ -17,7 +17,12 @@
   * `pytest` ≈ `flutter_test`/`package:test`; `pydantic-settings` ≈ `--dart-define`/`flutter_dotenv`.
   * `ruff` ≈ `dart analyze` + `dart format`; `uv`/`pyproject.toml` ≈ `pub`/`pubspec.yaml`.
   * Call out where Python differs from Dart (dynamic typing, indentation, no null safety, mutable defaults, GIL).
-* Work in small steps. Explain *why* before writing code, and let me type or review key parts myself.
+* **Walkthrough-first workflow (the way I learn):** I write the code myself. For each roadmap step, do NOT implement it in the project files. Instead, write a step-by-step walkthrough in `walkthrough-step-N.local.md` at the repo root (gitignored via `*.local.*`) that I follow and type by hand.
+  * Split the step into small sub-steps. Each sub-step has: the file path, *why* it exists, the code to type (inline, not in a separate answer key), a line-by-line explanation (with Dart/Flutter analogies), and a quick check command.
+  * Start each walkthrough with a "Step 0" for prerequisites (services up, migrations applied, seed data) and end with a troubleshooting table and a definition of done.
+  * Edit project source files only when I explicitly ask (e.g. fix a bug, review my code, apply a refactor). Do not commit unless told.
+  * When I finish typing, review my code on request and point out issues instead of silently rewriting it.
+* Work in small steps. Explain *why* before showing code.
 * Prefer the simplest thing that works. Flag when something is over-engineering for the current phase.
 * Directory tree and commands below are **planned**. Verify a file exists before assuming it does.
 

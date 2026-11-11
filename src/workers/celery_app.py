@@ -11,4 +11,5 @@ celery_app = Celery(
     "notification_hub",
     broker=_settings.redis_url,
     backend=_settings.redis_url,
+    include=["src.workers.tasks"],
 )

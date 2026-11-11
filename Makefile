@@ -13,6 +13,9 @@ env: ## Create .env from .env.example if it does not exist
 dev: ## Run the API with auto-reload on http://localhost:8000
 	uv run uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 
+worker: ## Run the Celery worker
+	uv run celery -A src.workers.celery_app worker --loglevel=info --pool=solo
+
 test: ## Run the test suite
 	uv run pytest
 

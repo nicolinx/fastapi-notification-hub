@@ -25,6 +25,14 @@ class NotFoundError(AppError):
     code = "not_found"
 
 
+class UserNotFoundError(NotFoundError):
+    code = "user_not_found"
+
+
+class NotificationNotFoundError(NotFoundError):
+    code = "notification_not_found"
+
+
 def _error_body(code: str, message: str) -> dict[str, dict[str, str]]:
     return {"error": {"code": code, "message": message}}
 

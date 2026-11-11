@@ -164,6 +164,8 @@ ruff format --check src/
 
 5. **Real FCM (optional):** Replace the mocked push provider with real Firebase Cloud Messaging, received by the Flutter demo client.
 
+6. **Production Config & Secrets (optional):** Stop hardcoding credentials in `docker-compose.yml`. Inject secrets via `env_file` / environment (kept out of Git and out of the image), use non-default DB passwords, stop publishing Postgres/Redis ports to the host, and add a short "Security notes" section to the README. Do this together with real FCM, since the Firebase service-account key is the first real secret.
+
 ### Phase 3: Real-Time Communication & Observability
 
 1. **WebSocket Dispatcher:** Add WebSocket endpoint (`/ws/notifications/{user_id}`) for live client updates on notification status changes.

@@ -37,11 +37,17 @@ typecheck: ## Run the strict mypy type checker
 
 check: lint format-check typecheck test ## Run everything CI will run
 
-up: ## Start Postgres and Redis in the background, wait until healthy
-	docker compose up -d --wait
+up: ## Start only Postgres and Redis (for running the API locally with make dev)
+	docker compose up -d --wait postgres redis
 
 down: ## Stop the containers (data is kept in volumes)
 	docker compose down
+
+build: ## Build the application image
+	docker compose build
+
+stack: ## Build and start the whole stack (postgres, redis, migrate, app, worker)
+	docker compose up -d --build
 
 logs: ## Follow container logs
 	docker compose logs -f

@@ -1,5 +1,11 @@
-# Local development infrastructure.
-# Step 6 adds the `app` and `worker` services to this same file.
+# Local stack: infrastructure plus the app, the worker, and a one-shot migration.
+
+# Shared by migrate, app and worker. Inside Docker, "localhost" would mean the
+# container itself, so the hosts are the service names: postgres and redis.
+x-app-env: &app-env
+  DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/notification_hub
+  SYNC_DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/notification_hub
+  REDIS_URL: redis://redis:6379/0
 
 services:
   postgres:
@@ -33,6 +39,49 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  migrate:
+    build: .
+    image: notification-hub:dev
+    command: alembic upgrade head
+    environment: *app-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  app:
+    build: .
+    image: notification-hub:dev
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment: *app-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  worker:
+    build: .
+    image: notification-hub:dev
+    restart: unless-stopped
+    command: celery -A src.workers.celery_app worker --loglevel=info
+    environment: *app-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
 
 volumes:
   postgres_data:

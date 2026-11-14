@@ -9,7 +9,7 @@ A small notification service built to learn FastAPI, async Python and background
 ## How it works
 
 ```mermaid
-flowchart LR
+flowchart TD
     Client -->|POST /send| API[FastAPI]
     API -->|1. save as PENDING| DB[(PostgreSQL)]
     API -->|2. enqueue job| Redis[(Redis)]

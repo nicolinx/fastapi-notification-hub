@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: notification_hub
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d notification_hub"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    # Dev-only credentials for the throwaway database above.
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/notification_hub
+      SYNC_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/notification_hub
+      REDIS_URL: redis://localhost:6379/0
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Lint, format, type-check and test
+        run: make check

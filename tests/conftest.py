@@ -1,8 +1,10 @@
 from collections.abc import AsyncIterator, Iterator
 from unittest.mock import MagicMock
+from urllib.parse import urlsplit
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from redis.asyncio import Redis
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine, make_url
 from sqlalchemy.ext.asyncio import (
@@ -15,12 +17,16 @@ from sqlalchemy.pool import NullPool
 
 from src.core.config import get_settings
 from src.core.database import get_db
+from src.core.redis import get_redis
 from src.main import app
 from src.models import Base, User
 from src.workers.celery_app import celery_app
 
 # Tests always run against this database, never the dev one.
 TEST_DB_NAME = "notification_hub_test"
+
+# Tests use their own Redis database number, never the dev one (0).
+TEST_REDIS_DB = 15
 
 
 @pytest.fixture(scope="session")
@@ -81,9 +87,28 @@ def send_task_mock(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
     return mock
 
 
+def _test_redis_url() -> str:
+    """The configured Redis URL, pointed at the test database number."""
+    parts = urlsplit(get_settings().redis_url)
+    return parts._replace(path=f"/{TEST_REDIS_DB}").geturl()
+
+
+@pytest.fixture
+async def redis_client() -> AsyncIterator[Redis]:
+    """A Redis client on the test database, emptied before and after each test."""
+    redis = Redis.from_url(_test_redis_url(), decode_responses=True)
+    await redis.flushdb()
+    yield redis
+    await redis.flushdb()
+    await redis.aclose()
+
+
 @pytest.fixture
 async def client(
-    sync_engine: Engine, clean_db: None, send_task_mock: MagicMock
+    sync_engine: Engine,
+    clean_db: None,
+    send_task_mock: MagicMock,
+    redis_client: Redis,
 ) -> AsyncIterator[AsyncClient]:
     """An HTTP client wired to the app and the test database."""
     async_url = make_url(get_settings().database_url).set(database=TEST_DB_NAME)
@@ -94,7 +119,12 @@ async def client(
         async with session_factory() as session:
             yield session
 
+    async def override_get_redis() -> Redis:
+        return redis_client
+
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_redis] = override_get_redis
+
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as test_client:

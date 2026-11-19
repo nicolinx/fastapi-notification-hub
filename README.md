@@ -122,3 +122,14 @@ Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2.0 (async) with Alembic, PostgreS
 
 - Phase 2: idempotency keys, rate limiting, Jinja2 templates, load test with real numbers.
 - Phase 3: WebSocket status updates, retries with backoff, Prometheus metrics, a Flutter demo client.
+
+## License
+
+Released under the [MIT License](LICENSE).
+
+## Author
+
+**Nicodemus Lin** — Senior Mobile Engineer
+
+[![Website](https://img.shields.io/badge/Website-nicolin.dev-4F46E5?style=for-the-badge&logo=globe&logoColor=white)](https://www.nicolin.dev/)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Nicodemus_Lin-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/nicodemus-lin/)

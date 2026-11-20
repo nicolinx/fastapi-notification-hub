@@ -33,6 +33,16 @@ class NotificationNotFoundError(NotFoundError):
     code = "notification_not_found"
 
 
+class IdempotencyKeyReusedError(AppError):
+    status_code = 422
+    code = "idempotency_key_reused"
+
+
+class IdempotencyInProgressError(AppError):
+    status_code = 409
+    code = "idempotency_in_progress"
+
+
 def _error_body(code: str, message: str) -> dict[str, dict[str, str]]:
     return {"error": {"code": code, "message": message}}
 

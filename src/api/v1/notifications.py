@@ -4,12 +4,17 @@ from fastapi import APIRouter, Depends, Header, Response, status
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.api.deps import get_current_api_key
 from src.core.database import get_db
 from src.core.redis import get_redis
 from src.schemas.notification import NotificationCreate, NotificationResponse
 from src.services import idempotency_service, notification_service
 
-router = APIRouter(prefix="/api/v1/notifications", tags=["notifications"])
+router = APIRouter(
+    prefix="/api/v1/notifications",
+    tags=["notifications"],
+    dependencies=[Depends(get_current_api_key)],
+)
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
 RedisClient = Annotated[Redis, Depends(get_redis)]

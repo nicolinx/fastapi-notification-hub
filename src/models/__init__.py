@@ -1,5 +1,6 @@
 """Import every model here so `Base.metadata` sees all tables (Alembic needs this)."""
 
+from src.models.api_key import ApiKey
 from src.models.base import Base
 from src.models.notification import (
     Notification,
@@ -9,6 +10,7 @@ from src.models.notification import (
 from src.models.user import User
 
 __all__ = [
+    "ApiKey",
     "Base",
     "Notification",
     "NotificationChannel",

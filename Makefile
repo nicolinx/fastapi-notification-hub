@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help install env dev test cov lint format format-check typecheck check clean up down logs ps migrate migration migrate-down psql
+.PHONY: help install env dev test cov lint format format-check typecheck check clean up down logs ps migrate migration migrate-down psql api-key
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -57,6 +57,10 @@ ps: ## Show container status and health
 
 migrate: ## Apply all pending database migrations
 	uv run alembic upgrade head
+
+api-key: ## Create an API key: make api-key name=demo
+	@test -n "$(name)" || (echo 'Usage: make api-key name=demo' && exit 1)
+	uv run python -m src.scripts.create_api_key "$(name)"
 
 migration: ## Generate a migration from model changes: make migration m="add x"
 	@test -n "$(m)" || (echo 'Usage: make migration m="describe the change"' && exit 1)

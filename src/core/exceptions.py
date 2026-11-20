@@ -43,6 +43,28 @@ class IdempotencyInProgressError(AppError):
     code = "idempotency_in_progress"
 
 
+class UnauthorizedError(AppError):
+    status_code = 401
+    code = "unauthorized"
+
+
+class MissingApiKeyError(UnauthorizedError):
+    code = "missing_api_key"
+
+
+class InvalidApiKeyError(UnauthorizedError):
+    code = "invalid_api_key"
+
+
+class ForbiddenError(AppError):
+    status_code = 403
+    code = "forbidden"
+
+
+class InactiveApiKeyError(ForbiddenError):
+    code = "api_key_inactive"
+
+
 def _error_body(code: str, message: str) -> dict[str, dict[str, str]]:
     return {"error": {"code": code, "message": message}}
 

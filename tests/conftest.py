@@ -19,7 +19,8 @@ from src.core.config import get_settings
 from src.core.database import get_db
 from src.core.redis import get_redis
 from src.main import app
-from src.models import Base, User
+from src.models import ApiKey, Base, User
+from src.services.api_key_service import generate_key, hash_key
 from src.workers.celery_app import celery_app
 
 # Tests always run against this database, never the dev one.
@@ -80,6 +81,16 @@ def user(sync_session_factory: sessionmaker[Session]) -> User:
 
 
 @pytest.fixture
+def api_key(sync_session_factory: sessionmaker[Session]) -> str:
+    """An active API key in the database. Returns the raw key a client would send."""
+    raw_key = generate_key()
+    with sync_session_factory() as session:
+        session.add(ApiKey(name="test", key_hash=hash_key(raw_key)))
+        session.commit()
+    return raw_key
+
+
+@pytest.fixture
 def send_task_mock(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
     """Replace celery_app.send_task so no test ever talks to Redis."""
     mock = MagicMock()
@@ -104,13 +115,13 @@ async def redis_client() -> AsyncIterator[Redis]:
 
 
 @pytest.fixture
-async def client(
+async def anon_client(
     sync_engine: Engine,
     clean_db: None,
     send_task_mock: MagicMock,
     redis_client: Redis,
 ) -> AsyncIterator[AsyncClient]:
-    """An HTTP client wired to the app and the test database."""
+    """An HTTP client with no API key, wired to the app and the test database."""
     async_url = make_url(get_settings().database_url).set(database=TEST_DB_NAME)
     engine = create_async_engine(async_url, poolclass=NullPool)
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
@@ -132,3 +143,10 @@ async def client(
 
     app.dependency_overrides.clear()
     await engine.dispose()
+
+
+@pytest.fixture
+async def client(anon_client: AsyncClient, api_key: str) -> AsyncClient:
+    """The same client, but sending a valid X-API-Key on every request."""
+    anon_client.headers["X-API-Key"] = api_key
+    return anon_client

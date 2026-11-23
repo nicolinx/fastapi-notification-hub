@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     # Allowed browser origins (CORS). Wide open in dev; restrict in production.
     cors_origins: list[str] = ["*"]
 
+    # Rate limit per API key: at most `rate_limit_requests` calls to POST /send in
+    # any `rate_limit_window_seconds` seconds. Override with env vars (load tests)/.
+    rate_limit_requests: int = 60
+    rate_limit_window_seconds: int = 60
+
     # Required: no defaults, so the app refuses to start if they are missing.
     # Set them in `.env` (local) or real environment variables (Docker/production).
     database_url: str  # async URL, used by the API

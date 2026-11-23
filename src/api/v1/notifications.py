@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Header, Response, status
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.deps import get_current_api_key
+from src.api.deps import enforce_rate_limit, get_current_api_key
 from src.core.database import get_db
 from src.core.redis import get_redis
 from src.schemas.notification import NotificationCreate, NotificationResponse
@@ -24,6 +24,7 @@ RedisClient = Annotated[Redis, Depends(get_redis)]
     "/send",
     status_code=status.HTTP_202_ACCEPTED,
     response_model=NotificationResponse,
+    dependencies=[Depends(enforce_rate_limit)],
 )
 async def send_notification(
     payload: NotificationCreate,

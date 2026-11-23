@@ -14,6 +14,7 @@ class AppError(Exception):
 
     status_code: int = 400
     code: str = "app_error"
+    headers: dict[str, str] | None = None
 
     def __init__(self, message: str) -> None:
         super().__init__(message)
@@ -65,6 +66,15 @@ class InactiveApiKeyError(ForbiddenError):
     code = "api_key_inactive"
 
 
+class RateLimitExceededError(AppError):
+    status_code = 429
+    code = "rate_limit_exceeded"
+
+    def __init__(self, message: str, headers: dict[str, str]) -> None:
+        super().__init__(message)
+        self.headers = headers
+
+
 def _error_body(code: str, message: str) -> dict[str, dict[str, str]]:
     return {"error": {"code": code, "message": message}}
 
@@ -73,6 +83,7 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,
         content=_error_body(exc.code, exc.message),
+        headers=exc.headers,
     )
 
 
